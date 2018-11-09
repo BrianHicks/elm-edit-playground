@@ -20,6 +20,7 @@ type Event
     = InsertText String
     | DeleteForward
     | DeleteBackward
+    | ChangeSelection Int Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -31,10 +32,11 @@ update msg model =
 
 view : Model -> Html Msg
 view _ =
-    div
+    node "elm-select"
         [ attribute "contenteditable" "true"
         , on "input" (Decode.map Changed decodeInput)
         , on "compositionend" (Decode.map Changed decodeCompositionEnd)
+        , on "select" (Decode.map Changed decodeSelect)
         ]
         [ strong [] [ text "Hey " ]
         , em []
@@ -95,3 +97,10 @@ decodeInput =
 decodeCompositionEnd : Decoder Event
 decodeCompositionEnd =
     Decode.map InsertText (Decode.field "data" Decode.string)
+
+
+decodeSelect : Decoder Event
+decodeSelect =
+    Decode.map2 ChangeSelection
+        (Decode.at [ "detail", "start", "offset" ] Decode.int)
+        (Decode.at [ "detail", "end", "offset" ] Decode.int)
