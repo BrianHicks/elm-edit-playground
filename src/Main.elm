@@ -39,7 +39,12 @@ view _ =
         , on "compositionend" (Decode.map Changed decodeCompositionEnd)
         ]
         [ strong [] [ text "Hey " ]
-        , em [] [ text "what's up?" ]
+        , em []
+            [ text "what's"
+            , text " "
+            , text "up"
+            , text "?"
+            ]
         ]
 
 
