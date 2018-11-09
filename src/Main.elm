@@ -22,26 +22,6 @@ type Event
     | DeleteBackward
 
 
-decodeInput : Decoder Event
-decodeInput =
-    Decode.andThen
-        (\inputType ->
-            case inputType of
-                "deleteContentBackward" ->
-                    Decode.succeed DeleteBackward
-
-                "deleteContentForward" ->
-                    Decode.succeed DeleteForward
-
-                "insertText" ->
-                    Decode.map InsertText (Decode.field "data" Decode.string)
-
-                _ ->
-                    Decode.fail ("don't know what to do with a '" ++ inputType ++ "' from the input event!")
-        )
-        (Decode.field "inputType" Decode.string)
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -82,3 +62,27 @@ main =
                 }
         , subscriptions = \_ -> Sub.none
         }
+
+
+
+-- event decoders
+
+
+decodeInput : Decoder Event
+decodeInput =
+    Decode.andThen
+        (\inputType ->
+            case inputType of
+                "deleteContentBackward" ->
+                    Decode.succeed DeleteBackward
+
+                "deleteContentForward" ->
+                    Decode.succeed DeleteForward
+
+                "insertText" ->
+                    Decode.map InsertText (Decode.field "data" Decode.string)
+
+                _ ->
+                    Decode.fail ("don't know what to do with a '" ++ inputType ++ "' from the input event!")
+        )
+        (Decode.field "inputType" Decode.string)
