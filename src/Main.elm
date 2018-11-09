@@ -9,33 +9,44 @@ import Json.Encode as Encode
 
 
 type alias Model =
-    { lastChange : Maybe Input }
+    { events : List Event }
 
 
 type Msg
-    = Changed Input
+    = Changed Event
 
 
-type alias Input =
-    { data : Maybe String
-    , inputType : String
-    , isComposing : Bool
-    }
+type Event
+    = InsertText String
+    | DeleteForward
+    | DeleteBackward
 
 
-decodeInput : Decoder Input
+decodeInput : Decoder Event
 decodeInput =
-    Decode.map3 Input
-        (Decode.field "data" (Decode.nullable Decode.string))
+    Decode.andThen
+        (\inputType ->
+            case inputType of
+                "deleteContentBackward" ->
+                    Decode.succeed DeleteBackward
+
+                "deleteContentForward" ->
+                    Decode.succeed DeleteForward
+
+                "insertText" ->
+                    Decode.map InsertText (Decode.field "data" Decode.string)
+
+                _ ->
+                    Decode.fail ("don't know what to do with a '" ++ inputType ++ "' from the input event!")
+        )
         (Decode.field "inputType" Decode.string)
-        (Decode.field "isComposing" Decode.bool)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Changed val ->
-            ( { model | lastChange = Just val }, Cmd.none )
+            ( { model | events = val :: model.events }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -52,14 +63,14 @@ view _ =
 
 
 debug : Model -> Html Msg
-debug { lastChange } =
-    Html.pre [] [ Html.text <| Debug.toString lastChange ]
+debug { events } =
+    Html.ul [] (List.map (Html.li [] << List.singleton << Html.text << Debug.toString) events)
 
 
 main : Program () Model Msg
 main =
     Browser.document
-        { init = \_ -> ( { lastChange = Nothing }, Cmd.none )
+        { init = \_ -> ( { events = [] }, Cmd.none )
         , update = update
         , view =
             \model ->
