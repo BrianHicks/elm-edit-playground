@@ -36,6 +36,7 @@ view _ =
 
         -- TODO: composeend to catch stuff like ñ and é
         , on "input" (Decode.map Changed decodeInput)
+        , on "compositionend" (Decode.map Changed decodeCompositionEnd)
         ]
         [ strong [] [ text "Hey " ]
         , em [] [ text "what's up?" ]
@@ -86,3 +87,8 @@ decodeInput =
                     Decode.fail ("don't know what to do with a '" ++ inputType ++ "' from the input event!")
         )
         (Decode.field "inputType" Decode.string)
+
+
+decodeCompositionEnd : Decoder Event
+decodeCompositionEnd =
+    Decode.map InsertText (Decode.field "data" Decode.string)
