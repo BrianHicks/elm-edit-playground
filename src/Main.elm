@@ -33,8 +33,6 @@ view : Model -> Html Msg
 view _ =
     div
         [ attribute "contenteditable" "true"
-
-        -- TODO: composeend to catch stuff like ñ and é
         , on "input" (Decode.map Changed decodeInput)
         , on "compositionend" (Decode.map Changed decodeCompositionEnd)
         ]
