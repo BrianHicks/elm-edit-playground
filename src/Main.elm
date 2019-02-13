@@ -7,17 +7,18 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (on)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import Selection exposing (Selection)
 
 
 type alias Model =
-    { events : List Msg
+    { selection : Selection
     , doc : Doc
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { events = []
+    ( { selection = Selection.init 0 0
       , doc = Doc.sampleDoc
       }
     , Cmd.none
@@ -42,16 +43,37 @@ type Event
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( { model | events = msg :: model.events }
-    , Cmd.none
-    )
+    case msg of
+        Changed (InsertText string) ->
+            ( { model | doc = Doc.insertAt (Selection.start model.selection) string model.doc }
+            , Cmd.none
+            )
+
+        Changed (ChangeSelection start end) ->
+            ( { model | selection = Selection.init start end }
+            , Cmd.none
+            )
+
+        Changed DeleteBackward ->
+            ( { model | doc = Doc.delete (Selection.start model.selection) model.doc }
+            , Cmd.none
+            )
+
+        Changed DeleteForward ->
+            ( { model | doc = Doc.delete (Selection.start model.selection + 1) model.doc }
+            , Cmd.none
+            )
+
+        Pasted _ ->
+            -- TODO!
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
     main_
         []
-        [ p [] [ text (Debug.toString model.doc) ]
+        [ p [] [ text (Debug.toString model) ]
         , node "elm-select"
             [ attribute "contenteditable" "true"
             , on "input" (Decode.map Changed decodeInput)
@@ -63,11 +85,6 @@ view model =
         ]
 
 
-debug : Model -> Html Msg
-debug { events } =
-    Html.ul [] (List.map (Html.li [] << List.singleton << Html.text << Debug.toString) events)
-
-
 main : Program () Model Msg
 main =
     Browser.document
@@ -76,10 +93,7 @@ main =
         , view =
             \model ->
                 { title = "Elm Edit"
-                , body =
-                    [ view model
-                    , debug model
-                    ]
+                , body = [ view model ]
                 }
         , subscriptions = \_ -> Sub.none
         }

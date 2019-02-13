@@ -1,6 +1,7 @@
-module Doc exposing (Attr, Doc, fromString, sampleDoc, toHtml)
+module Doc exposing (Attr, Doc, delete, deleteSelection, fromString, insertAt, sampleDoc, toHtml)
 
 import Html exposing (Html)
+import Selection exposing (Selection)
 
 
 type Doc
@@ -56,3 +57,37 @@ style c attrs =
 
         Italic :: rest ->
             Html.em [] [ style c rest ]
+
+
+insertAt : Int -> String -> Doc -> Doc
+insertAt where_ text (Doc doc) =
+    let
+        prevAttrs =
+            doc
+                |> List.drop where_
+                |> List.head
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault []
+
+        prev =
+            List.take where_ doc
+
+        next =
+            List.drop where_ doc
+
+        current =
+            text
+                |> String.toList
+                |> List.map (\c -> ( c, prevAttrs ))
+    in
+    Doc (prev ++ current ++ next)
+
+
+delete : Int -> Doc -> Doc
+delete where_ (Doc doc) =
+    Doc (List.take (where_ - 1) doc ++ List.drop where_ doc)
+
+
+deleteSelection : Selection -> Doc -> Doc
+deleteSelection selection (Doc doc) =
+    Doc (List.take (Selection.start selection) doc ++ List.drop (Selection.end selection) doc)
