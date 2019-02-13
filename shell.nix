@@ -13,5 +13,6 @@ stdenv.mkDerivation {
     elmPackages.elm
     elmPackages.elm-format
     nodePackages.npm
+    nodejs
   ];
 }
