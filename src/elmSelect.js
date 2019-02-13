@@ -2,6 +2,22 @@ class ElmSelect extends HTMLElement {
   constructor(...args) {
     const self = super(...args);
 
+    // TODO: none of these event names are standard, and they may clash with
+    // ones that the browser emits. What's the best way to do this safely?
+
+    // TODO: this needs prettier on the whole thing
+
+    // TODO: probably needs like flow or TS checking as well
+
+    // TODO: pasting doesn't work right on the Elm side yet! We need to grab an
+    // HTML parser and get stuff out of there for it to work properly.
+    self.addEventListener('paste', function(event) {
+      self.dispatchEvent(new CustomEvent('pasteHTML', { detail: {
+        originalEvent: event,
+        html: event.clipboardData.getData('text/html')
+      }}));
+    });
+
     // add event handler for selections
     document.addEventListener('selectionchange', function(event) {
       if (event.target.activeElement !== self) { return; }

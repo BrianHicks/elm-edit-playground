@@ -9,11 +9,16 @@ import Json.Encode as Encode
 
 
 type alias Model =
-    { events : List Event }
+    { events : List Msg }
+
+
+type RawHtml
+    = RawHtml String
 
 
 type Msg
     = Changed Event
+    | Pasted RawHtml
 
 
 type Event
@@ -25,9 +30,9 @@ type Event
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        Changed val ->
-            ( { model | events = val :: model.events }, Cmd.none )
+    ( { model | events = msg :: model.events }
+    , Cmd.none
+    )
 
 
 view : Model -> Html Msg
@@ -37,6 +42,7 @@ view _ =
         , on "input" (Decode.map Changed decodeInput)
         , on "compositionend" (Decode.map Changed decodeCompositionEnd)
         , on "select" (Decode.map Changed decodeSelect)
+        , on "pasteHTML" (Decode.map Pasted decodePasteHtml)
         ]
         [ strong [] [ text "Hey " ]
         , em []
@@ -104,3 +110,10 @@ decodeSelect =
     Decode.map2 ChangeSelection
         (Decode.at [ "detail", "start", "offset" ] Decode.int)
         (Decode.at [ "detail", "end", "offset" ] Decode.int)
+
+
+decodePasteHtml : Decoder RawHtml
+decodePasteHtml =
+    -- TODO: we could probably decode this to a document structure in this paste
+    Decode.at [ "detail", "html" ] Decode.string
+        |> Decode.map RawHtml
