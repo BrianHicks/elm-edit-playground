@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Browser
+import Doc exposing (Doc)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on)
@@ -9,7 +10,18 @@ import Json.Encode as Encode
 
 
 type alias Model =
-    { events : List Msg }
+    { events : List Msg
+    , doc : Doc
+    }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { events = []
+      , doc = Doc.sampleDoc
+      }
+    , Cmd.none
+    )
 
 
 type RawHtml
@@ -36,21 +48,18 @@ update msg model =
 
 
 view : Model -> Html Msg
-view _ =
-    node "elm-select"
-        [ attribute "contenteditable" "true"
-        , on "input" (Decode.map Changed decodeInput)
-        , on "compositionend" (Decode.map Changed decodeCompositionEnd)
-        , on "select" (Decode.map Changed decodeSelect)
-        , on "pasteHTML" (Decode.map Pasted decodePasteHtml)
-        ]
-        [ strong [] [ text "Hey " ]
-        , em []
-            [ text "what's"
-            , text " "
-            , text "up"
-            , text "?"
+view model =
+    main_
+        []
+        [ p [] [ text (Debug.toString model.doc) ]
+        , node "elm-select"
+            [ attribute "contenteditable" "true"
+            , on "input" (Decode.map Changed decodeInput)
+            , on "compositionend" (Decode.map Changed decodeCompositionEnd)
+            , on "select" (Decode.map Changed decodeSelect)
+            , on "pasteHTML" (Decode.map Pasted decodePasteHtml)
             ]
+            (Doc.toHtml model.doc)
         ]
 
 
@@ -62,7 +71,7 @@ debug { events } =
 main : Program () Model Msg
 main =
     Browser.document
-        { init = \_ -> ( { events = [] }, Cmd.none )
+        { init = init
         , update = update
         , view =
             \model ->
