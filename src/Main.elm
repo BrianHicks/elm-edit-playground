@@ -80,6 +80,7 @@ view model =
             , on "compositionend" (Decode.map Changed decodeCompositionEnd)
             , on "select" (Decode.map Changed decodeSelect)
             , on "pasteHTML" (Decode.map Pasted decodePasteHtml)
+            , Html.Attributes.map Changed <| Html.Events.preventDefaultOn "keydown" decodeKeyDown
             ]
             (Doc.toHtml model.doc)
         ]
@@ -140,3 +141,20 @@ decodePasteHtml =
     -- TODO: we could probably decode this to a document structure in this paste
     Decode.at [ "detail", "html" ] Decode.string
         |> Decode.map RawHtml
+
+
+decodeKeyDown : Decoder ( Event, Bool )
+decodeKeyDown =
+    Decode.field "key" Decode.string
+        |> Decode.andThen
+            (\key ->
+                case key of
+                    "Backspace" ->
+                        Decode.succeed ( DeleteBackward, True )
+
+                    "Delete" ->
+                        Decode.succeed ( DeleteForward, True )
+
+                    _ ->
+                        Decode.fail "I'm only for deletions!"
+            )
