@@ -14,5 +14,6 @@ stdenv.mkDerivation {
     elmPackages.elm-format
     nodePackages.npm
     nodejs
+    gnumake
   ];
 }
