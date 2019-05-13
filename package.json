@@ -9,10 +9,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@babel/core": "^7.1.5",
-    "@babel/plugin-proposal-class-properties": "^7.1.0",
-    "elm-test": "^0.19.0-beta12",
-    "parcel": "^1.10.3"
+    "elm-test": "^0.19.0-beta12"
   },
   "devDependencies": {},
   "scripts": {
