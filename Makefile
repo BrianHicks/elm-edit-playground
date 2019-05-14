@@ -7,3 +7,7 @@ public/%: src/%
 public/main.js: src/Main.elm $(shell find src -name '*.elm')
 	@mkdir -p ${@D}
 	elm make --output $@ $<
+
+.PHONY: serve
+serve: public
+	devd public --livereload --livewatch
