@@ -6,14 +6,21 @@ with import (builtins.fetchTarball rec {
   sha256 = "1vibh9k2swmsq07v2fsqxhc0lxn0gnk48jsykxbb42bvlsxisxdi";
 }) {};
 
-stdenv.mkDerivation {
-  name = "elm-edit";
-  buildInputs = [
-    git
-    elmPackages.elm
-    elmPackages.elm-format
-    nodePackages.npm
-    nodejs
-    gnumake
-  ];
-}
+let
+  elmTools = import (pkgs.fetchFromGitHub {
+    owner = "turboMaCk";
+    repo = "nix-elm-tools";
+    rev = "49b79886a43f816f53f3325dba05c40f28b5233d";
+    sha256 = "03j352q3s8d4x79570vgiwc4sjlyj5vi0nnvi15z4x0haga3410r";
+  }) { inherit pkgs; };
+in
+  stdenv.mkDerivation {
+    name = "elm-edit";
+    buildInputs = [
+      elmPackages.elm
+      elmPackages.elm-format
+      elmTools.elm-test
+      git
+      gnumake
+    ];
+  }
